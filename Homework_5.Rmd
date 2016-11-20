@@ -1,0 +1,363 @@
+---
+title: "homework_5"
+author: "Amy Atwater" 
+date: "November 17, 2016"
+output: html_document
+---
+```{r}
+
+#### Homework 5: Bootstrapping Standard Errors and CIs for Linear Models
+
+### Nov. 20th
+
+library(dplyr)
+library(curl)
+library(ggplot2)
+f <- curl("https://raw.githubusercontent.com/difiore/ADA2016/master/KamilarAndCooperData.csv")
+f <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE) ### load in data
+head(f)
+
+home <- c(log(f$HomeRange_km2)) ### create new columns for log transformed home range and body mass
+mass <- c(log(f$Body_mass_female_mean))
+summary(home)
+summary(mass)
+f <- cbind(f, home, mass) ### bind these new columes to the original dataset
+f <-  f[!is.na(f$home),]
+f <-  f[!is.na(f$mass),]
+head(f) 
+
+f <- as.data.frame(cbind(home, mass)) ### create new dataset, f, which will only contain the log transformed home range and body mass data
+head(f)
+f <-  f[!is.na(home),]
+head(f)
+
+model <- lm(home~mass, data=f) ### Create Linear Regression Model ###
+model
+summary(model) ### summary statistics
+confint(model, level = 0.95) ### confidence intervals
+
+
+ #Bootstrapping
+  hi <- NULL #sets up an empty variable
+  loop <- rep(0,1000) # repeat whatever follows 1000 times
+  for(i in 1:1000){ #setting the bootstrap to sample 1000 times
+  samp <- f[sample(nrow(f), replace=TRUE),] 
+  loop <- lm(home~mass, samp) #putting bootstrapped data into the linear regression
+  hi <- rbind(hi, coef(loop)) 
+  } #finally, make a new dataframe for these coefficients
+
+head(hi)
+sd(hi[,1]) # standard error for the intercept 
+## 0.5867524
+sd(hi[,2]) # standard error the the slope
+## 0.075
+quantile(hi[,1], c(0.025, 0.975), na.rm = TRUE) # confidence intervals
+
+quantile(hi[,2], c(0.025, 0.975), na.rm = TRUE) 
+
+
+### The Standard Errors for the bootstrapped data are slightly less than those calculated from teh original linear regression model. The Confidence intervals are very similar to the originals, with the intecept CI being less than the original CI, but the mass is only less for the lower limit, the upper CI is greater. This shows how well bootstrapping works as a resampling technique. Pull yourself up by the bootstraps! ####
+
+
+####### EARLIER ATTEMPTS, WARNING, CURSE WORDS FREQUENT #####
+
+library(curl)
+library(ggplot2)
+f <- curl("https://raw.githubusercontent.com/difiore/ADA2016/master/KamilarAndCooperData.csv")
+f <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(f)
+
+### Using the "KamilarAndCooperData.csv" dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your $\beta$ coeffiecients (slope and intercept). ###
+
+boo <-lm(log(HomeRange_km2) ~ log(Body_mass_female_mean) , data = f)
+
+boo
+booc <- coef(boo)
+booc
+
+### # of homerange and body mass values: 199
+
+### Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each $\beta$ coefficient. ###
+
+
+set <- NULL # sets up a dummy variable to hold our 10000 simulations
+n <- 213
+
+for (i in 1:1000){
+    set[i] <- coef(sample(home ~ mass, n, replace=TRUE))
+}
+
+
+set[i]
+for (i in 1:10000){derp <- sample(199, 199, replace = TRUE)
+set[i] <- coef(lm(log(d$HomeRange_km2)[derp]~log(d$Body_mass_female_mean)[derp]))[1]}
+  
+
+  mean(sample(x, n, replace=TRUE))
+}
+
+bv <- d[, 'HomeRange_km2']
+bv1 <-log(bv)
+bp <- d[,'Body_mass_female_mean']
+bv2 <- log(bp)
+
+
+for(i in 1:1000) {this.samp <- sample(d, 199, replace=TRUE)}
+  
+poo <-lm(log(HomeRange_km2) ~ log(Body_mass_female_mean) , data = d)
+
+poo
+plot(poo)
+
+se <- sd(poo)
+CI5 <- c() 
+CI95 <- c() 
+var <- c() 
+number <- c() 
+speed <- c()
+
+
+for(i in 1:1000){s <-sample(d$Presacral.No., nrow(singleSpdat), replace = TRUE) #creates variable for the random sampling of each species' presacral vertebrae data, it samples from the number of observances for each species, with replacement so that each value is put back in the bin for each sampling event 
+         v[i] <- sum((s - mean(s, na.rm=T))^2)/(length(s) - 1) #equation to calculate the variance of the random sampling of each species' presacral vertebral column count
+    }
+
+data <- round(rnorm(1000))
+data[1:10]
+resamples <- lapply(1:20, function(i)
+sample(data, replace = T))
+resamples[1]
+
+
+set <- NULL 
+n <- 1000
+for (i in 1:1000){set[i] <- mean(sample(boo, n, replace=TRUE))}
+
+### Estimate the standard error for each of your $\beta$ coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your $\beta$ coefficients based on the appropriate quantiles from your sampling distribution. ###
+
+samp.dist = do(1000)* coef(sample(lm(log(HomeRange_km2) ~ log(Body_mass_female_mean), 199)))
+hist(samp.dist)
+sd(samp.dist)
+
+library(sciplot)
+se(poo)
+
+sample_v <- function (this.samp){sum((this.samp-mean(this.samp))^2)/(length(this.samp)-1)}
+sd(x)
+SE1 <- function(x){sqrt(sample_v(x)/length(x))}
+SE1(x)
+
+out<-rep(0,2000)
+for(ii in 1:2000) {new.df<-df[sample(nrow(df),replace=T),] out[ii]<-coef(lm(X2 ~ X1,new.df))[2]}
+sd(out)   
+
+SE2 <- function(x){sqrt(var(set)/length(set))}
+SE2(set)
+quantile(set)
+quantile(set, c(0.025, 0.975))
+
+
+### How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()? ###
+
+
+
+
+bboot <- numeric(1000)
+for(i in 1:1000) {
+   this.ind <- sample(213, 213, replace=TRUE)
+   bboot[i] <- coef(lm(
+      log(d$HomeRange_km2)[this.ind]~log(d$Body_mass_female_mean)[this.ind]))[1]
+}
+
+boot<-numeric(1000)
+for(i in 1:1000) {
+   this.ind <- sample(213, 213, replace=TRUE)
+   boot[i] <- coef(lm(
+      log(d$HomeRange_km2)[this.ind]~log(d$Body_mass_female_mean)[this.ind]))[2]
+}
+
+bootsee<-bootCase(a, f.=coef, B=1000)
+bootsee
+mean(bootsee[,1])
+se(bootsee[,1])
+quantile(bootsee [,1], c(0.025, 0.975))
+
+
+f <- curl("https://raw.githubusercontent.com/difiore/ADA2016/master/KamilarAndCooperData.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+
+
+m1 <-lm(log(HomeRange_km2) ~ log(Body_mass_female_mean) , data = d)
+
+original.estimates <- as.vector(t(do.call(rbind, coef(summary(m1)))[, 1:2]))
+
+n.sim <- 1000
+
+store.matrix <- matrix(NA, nrow=n.sim, ncol=12)
+
+set.seed(123)
+
+for(i in 1:n.sim) {data.new <- zinb[sample(1:dim(zinb)[1], dim(zinb)[1], replace=TRUE),] 
+
+
+f <- curl("http://www.ats.ucla.edu/stat/data/fish.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+
+zinb <- read.csv("http://www.ats.ucla.edu/stat/data/fish.csv")
+
+zinb <- within(zinb, {
+  nofish <- factor(nofish)
+  livebait <- factor(livebait)
+  camper <- factor(camper)
+})
+
+m1 <- lm(count ~ child + camper | persons, data = zinb, dist = "negbin", EM = TRUE)
+
+original.estimates <- as.vector(t(do.call(rbind, coef(summary(m1)))[, 1:2]))
+
+
+
+#####
+x <- d
+set <- NULL 
+n <- 199
+for (i in 1:1000){set[i] <- lm(log(HomeRange_km2) ~ log(Body_mass_female_mean) , data = x, replace= TRUE)
+}
+
+warnings()
+
+quantile(set)
+quantile(set, c(0.025, 0.975))
+
+
+
+
+#### Fucking Stanford code ###
+
+
+library(ggplot2)
+f <- curl("https://raw.githubusercontent.com/difiore/ADA2016/master/KamilarAndCooperData.csv")
+f <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+
+data <- c(home,mass)
+
+data
+boo <-lm(log(HomeRange_km2) ~ log(Body_mass_female_mean) , data = f)
+
+home <- c(log(f$HomeRange_km2))
+mass <-c(log(f$Body_mass_female_mean))
+
+lm(home ~ mass)
+
+mod <- lm(home ~ mass)
+summary(mod)
+
+og <- coef(mod)
+
+nsim <- 1000
+
+set.seed(213)
+
+
+
+for(i in 1:n.sim) {data.new <- mod[sample(1:dim(mod)[1], dim(mod)[1], replace=TRUE),]
+
+  m <- lm(home~mass) 
+  
+  store.matrix[i, ] <- as.vector(t(do.call(rbind, coef(summary(m)))[, 1:2]))}
+
+
+original.estimates <- as.vector(t(do.call(rbind, coef(summary(mod)))[, 1:2]))
+
+
+regmodel <- predict(lm(home ~ mass))
+
+regmodel
+
+npoints <- length(home)
+
+npoints
+
+do(1000)*{boot.samp = sample(f, 213, replace=TRUE)
+ lm(boot.samp$home, boot.samp$mass)}
+
+for (k in 1: npoints)  coef(c(mass[k], mass[k]), c(home[k], regmodel[k]))
+
+
+model <- function(x){
+  lm(log(HomeRange_km2) ~ log(Body_mass_female_mean), data=f)}
+
+
+
+
+set <- NULL # sets up a dummy variable to hold our 10000 simulations
+n <- 199
+for (i in 1:1000){
+    set[i] <- lm(sample(f, n, replace=TRUE))}
+
+bootstrappedCoefficients <- numeric(1000)
+for (i in 1:1000) {
+bootstrappedDataset <- f[sample(nrow(f), nrow(f), replace = TRUE, prob=NULL), ]
+bootstrappedCoefficients[i] <- model(bootstrappedDataset)
+}
+
+coef(boostrappedCoefficients[[1]])
+
+
+bootstrappedCoefficients <- numeric(1000)
+for (i in 1:1000){set[i] <- lm(log(HomeRange_km2) ~ log(Body_mass_female_mean) , data = f, replace= TRUE)
+bootstrappedCoefficients[i] <- "calculate_statistic(bootstrappedDataset)"
+}
+
+summary(bootstrappedCoefficients)
+quantile(bootstrappedCoefficients, .500) # median
+quantile(bootstrappedCoefficients, .025) # 2.5th percentile
+quantile(bootstrappedCoefficients, .975) # 97.5th percentile
+
+
+bootstrappedCoefficients <- numeric(1000)
+for (i in 1:1000) {
+bootstrappedDataset <- f[sample(lm(log(HomeRange_km2) ~ log(Body_mass_female_mean)) , data = f, replace= TRUE)]
+bootstrappedCoefficients[i] <- "lm(bootstrappedDataset)"
+}
+
+for (i in 1:1000){
+ bootsamp = sample(f, 199, replace=TRUE)
+ lm(bootsamp$log(HomeRange_km2)), bootsamp$log(Body_mass_female_mean))}
+
+set <- NULL # sets up a dummy variable to hold our 1000 simulations
+n <- 199
+for (i in 1:1000){set[i] <- lm(sample(f, 199, replace=TRUE))(bootsamp$HomeRange_km2), bootsamp$Body_mass_female_mean)}
+
+
+
+bootstrappedCoefficients <- numeric(1000)
+for (j in 1:1000) bootstrappedDataset <- f[sample(log(HomeRange_km2) ~ (log(Body_mass_female_mean, replace = TRUE, prob=NULL) ]
+bootstrappedCoefficients[j] <- "calculate_statistic(bootstrappedDataset)"
+
+#### beta coefficients: slope and intercept ### 
+
+
+n <- length(home) 
+
+n
+
+B <- 1000
+rep.boot <- numeric(B)
+for (i in 1:B) {plz <- sample(1:n, size = n, replace = TRUE)  #sample indices
+    d.boot <- f[plz, ]  #sample pairs from data
+    rep.boot[i] <- cor(d.boot)[1, 2]  #compute & store correlation
+}
+
+
+######
+
+
+
+
+
+
+
+
+
