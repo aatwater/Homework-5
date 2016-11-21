@@ -1,0 +1,54 @@
+---
+title: "HW5 EC IT WORKS"
+author: "Amy Atwater"
+date: "November 21, 2016"
+output: html_document
+---
+
+```{r}
+f <- curl("https://raw.githubusercontent.com/difiore/ADA2016/master/KamilarAndCooperData.csv")
+f <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE) ### load in data
+head(f)
+
+home <- c(log(f$HomeRange_km2)) ### create new columns for log transformed home range and body mass
+mass <- c(log(f$Body_mass_female_mean))
+summary(home)
+summary(mass)
+f <- cbind(f, home, mass) ### bind these new columes to the original dataset
+f <-  f[!is.na(f$home),]
+f <-  f[!is.na(f$mass),]
+head(f) 
+
+##### EXTRA CREDIT  #####
+
+WESTCOAST <- function(df){
+  hi <- NULL #sets up an empty variable
+  yintercept <- c()
+  slope <- c()
+  SE1 <- c()
+  SE2 <- c()
+  CI1lo <- c()
+  CI1up <- c()
+  CI2lo <- c()
+  CI2up <- c()
+  loop <- rep(0,1000) # repeat whatever follows 1000 times
+    for(i in 1:1000){ #setting the bootstrap to sample 1000 times
+    samp <- f[sample(nrow(f), replace=TRUE),] 
+    loop <- lm(home~mass, samp) #putting bootstrapped data into the linear regression
+  hi <- rbind(hi, coef(loop)) 
+  SE1 <- sd(hi[,1])
+  SE2 <- sd(hi[,2])
+  CI1lo <- quantile(hi[,1], c(0.025), na.rm = TRUE) # confidence intervals
+  CI1up <- quantile(hi[,1], c(0.975), na.rm = TRUE)
+  CI2lo <- quantile(hi[,2], c(0.025), na.rm = TRUE)
+  CI2up <- quantile(hi[,2], c(0.975), na.rm = TRUE)
+    }
+  yintercept <- as.numeric(quantile(s[,1], c(0.025, 0.975), na.rm = TRUE))
+     slope <- as.numeric(quantile(s[,2], c(0.025, 0.975), na.rm = TRUE))
+    c <- cbind(s, yintercept, slope, SE1, SE2, CI1lo, CI1up, CI2lo, CI2up)
+    return(as.data.frame(c))
+}
+
+WESTCOAST(f)
+WC <- WESTCOAST(f)
+WC
