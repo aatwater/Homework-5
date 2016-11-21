@@ -1,0 +1,90 @@
+---
+title: "Nov. 20th"
+author: "Amy Atwater"
+date: "November 20, 2016"
+output: html_document
+---
+
+```{r}
+### THE EXTRA CREDIT ASSIGNMENT ####
+
+
+### Write a FUNCTION that takes as its arguments a dataframe, "d", a linear model, "m" (as a character string, e.g., "logHR~logBM"), a user-defined confidence interval level, "conf.level" (with default = 0.95), and a number of bootstrap replicates, "n" (with default = 1000). Your function should return a dataframe that includes: beta coefficient names; beta coefficients, standard errors, and upper and lower CI limits for the linear model based on your entire dataset; and mean beta coefficient estimates, SEs, and CI limits for those coefficients based on your bootstrap.
+
+library(dplyr)
+library(curl)
+library(ggplot2)
+f <- curl("https://raw.githubusercontent.com/difiore/ADA2016/master/KamilarAndCooperData.csv")
+f <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE) ### load in data
+head(f)
+
+home <- c(log(f$HomeRange_km2)) ### create new columns for log transformed home range and body mass
+mass <- c(log(f$Body_mass_female_mean))
+summary(home)
+summary(mass)
+f <- cbind(f, home, mass) ### bind these new columes to the original dataset
+f <-  f[!is.na(f$home),]
+f <-  f[!is.na(f$mass),]
+head(f) 
+
+f <- as.data.frame(cbind(home, mass)) ### create new dataset, f, which will only contain the log transformed home range and body mass data
+head(f)
+f <-  f[!is.na(home),]
+head(f)
+
+model <- lm(home~mass, data=f) ### Create Linear Regression Model ###
+model
+summary(model) ### summary statistics
+confint(model, level = 0.95) ### confidence intervals
+
+
+ #Bootstrapping
+  hi <- NULL #sets up an empty variable
+  loop <- rep(0,1000) # repeat whatever follows 1000 times
+  for(i in 1:1000){ #setting the bootstrap to sample 1000 times
+  samp <- f[sample(nrow(f), replace=TRUE),] 
+  loop <- lm(home~mass, samp) #putting bootstrapped data into the linear regression
+  hi <- rbind(hi, coef(loop)) 
+  } #finally, make a new dataframe for these coefficients
+
+head(hi)
+sd(hi[,1]) # standard error for the intercept 
+## 0.5867524
+sd(hi[,2]) # standard error the the slope
+## 0.075
+quantile(hi[,1], c(0.025, 0.975), na.rm = TRUE) # confidence intervals
+
+quantile(hi[,2], c(0.025, 0.975), na.rm = TRUE) 
+
+
+
+whole_thing <- function(f, n){ #this function will act on the specified dataframe (will be d), n times (will be 1000)
+  CI5 <- c() 
+  CI95 <- c() 
+  intercept <- c() 
+  slope <- c()
+  var <- c() 
+  
+  for(k in 1:213){
+    v <- NULL
+    s <- NULL
+    samp <- f[sample(nrow(f)), replace = TRUE)
+  }
+  intercept[k] <- samp$coef[1] 
+  slope[k] <- nrow(samp)
+    
+  for(i in 1:1000){ #setting the bootstrap to sample 1000 times
+  samp <- f[sample(nrow(f), replace=TRUE),] 
+  loop <- lm(home~mass, samp) #putting bootstrapped data into the linear regression
+  hi <- rbind(hi, coef(loop)) 
+} 
+  
+    var[k] <- mean(v) 
+    q <- quantile(v, c(0.25, 0.975), na.rm=TRUE) 
+    CI5[k] <- q[1] 
+    CI95[k] <- q[2] 
+  }
+return(data.frame( CI95, CI5)) 
+}
+finish <- whole_thing(f,1000) 
+View(finish) 
